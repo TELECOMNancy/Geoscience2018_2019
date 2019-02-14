@@ -32,31 +32,26 @@ def Analyse_Magnitude(datas):
     somme.reverse()    
 
     X = np.asarray(x) # Conversion de tuple vers np.array
+    SOMME = np.asarray(somme)
 
-    #Calcule de la tangente en un point
-    
+    '''
+    #Calcule de la tangente en un point    
     x0 = 0
     i0 = np.argmin(np.abs(X-x0))
     x1 = X[i0:i0+2]
     somme1 = somme[i0:i0+2]
     dydx, = np.diff(somme1)/np.diff(x1)
-    tngnt = lambda x: dydx*X + (somme1[0]-dydx*x1[0])
+    tngnt = lambda x: dydx*X + (somme1[0]-dydx*x1[0])'''
     
     #Regression linéaire sur une échelle semilog
-    X1 = X.tolist()
-    X2 = []
-    SOMME2 = []
-    for index,i in enumerate(X1) :
-        if i > -3.5 and i < 4 :
-            X2.append(i)
-            SOMME2.append(somme[index])
-
-    X2 = np.asarray(X2)
+    condition = [i>-3.5 and i <4 for i in X]
+    X2 = X[condition]
+    SOMME2 = SOMME[condition]
     p = np.polyfit(X2, np.log(SOMME2), 1)
 
     #Création et sauvegarde du graphe  
     plt.plot(X, somme)
-    plt.plot(x, tngnt(x), label="tangent")
+    #plt.plot(x, tngnt(x), label="tangent")
     plt.plot(X2, np.exp(p[0] * X2 + p[1]), 'g--')
     plt.yscale('log')
     plt.savefig('Magnitude_AnalyseTest.png')
