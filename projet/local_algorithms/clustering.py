@@ -33,18 +33,18 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
     :return: A new dataframe
     """
 
-    df_in = df_in[["i", "p0", "p1", "p2", "e", "t"]]
+    df_cluster = df_in[["i", "p0", "p1", "p2", "e", "t"]]
 
     # As we don't compute the square root
     delta_v = delta_v ** 2
 
-    number_of_rows = len(df_in.index)
+    number_of_rows = len(df_cluster.index)
     clustering_list = [-1] * number_of_rows
 
     print("Creation of clusters")
     # We save the start of the temporal frame of the precedent iteration
     last_first_correct_element = 0
-    for row_i in df_in.itertuples():
+    for row_i in df_cluster.itertuples():
         index_i = row_i.Index
         print(index_i, "/", number_of_rows)
         # If the element is already in a cluster we get his cluster_number else we create a new cluster_number
@@ -53,7 +53,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         # The elements are sorted on their iteration number, once we have surpassed the time frame
         # the following elements won't be of use
         # If was_in_time is False, we are before the temporal window
-        for row_j in df_in.itertuples():
+        for row_j in df_cluster.itertuples():
             index_j = row_j.Index
             if index_j >= last_first_correct_element:
                 # delta_t_ij = compute_time_distance(row_i, row_j)
@@ -82,8 +82,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
                 elif in_the_temporal_window:
                     break
 
-    df_clustering = df_in
-    df_clustering["cluster"] = clustering_list
+    df_cluster["cluster"] = clustering_list
 
     print("Formalize the result")
     # create the new data
