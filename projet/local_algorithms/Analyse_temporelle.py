@@ -46,7 +46,7 @@ def C(gam, b):
     C =  np.power(b, gam) * gamma(gam)
     return 1/C
 
-def analyse_temporelle(df)
+def analyse_temporelle(df):
     t_declenchement_microcrack = df['i'] * 0.0001 
 
     dif = np.diff(t_declenchement_microcrack)

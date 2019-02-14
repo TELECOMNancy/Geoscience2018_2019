@@ -21,7 +21,7 @@ import math
 
 # 'nrows = nb_ligne' en 3ème argument pour spécifier le nombre de ligne dans read_table
 
-df = pd.read_table("cracks.csv",sep =' ',header = 0)
+
 
 
 
@@ -110,21 +110,24 @@ def analyse_dimension(df):
     position = get_all_position(p0,p1,p2)
     tree = create_tree(position)
     nt = pairs_number(position)
-    minimum,maximum = get_distance_min_max(position)
+    minimum, maximum = get_distance_min_max(position)
 
 
     x = get_abcisses(20,minimum,maximum)
-    y,compteur = get_ordonnees(tree,x,nt)
+    y, compteur = get_ordonnees(tree,x,nt)
     x = recompute_abcisses(x,compteur)
+    plt.figure()
     plt.xlabel('distance log(r) ')
     plt.ylabel('corrélation spatiale')
     plt.title('Graphe de corrélation spatiale')
     plt.xscale('log')
-    plt.plot(x,y) 
+    plt.plot(x, y)
 
     fit = np.polyfit(x, y, 1) 
 
-analyse_dimension(df)
+if __name__ == '__main__':
+    df = pd.read_table("data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt", sep=' ', header=0)
+    analyse_dimension(df)
 
 
 

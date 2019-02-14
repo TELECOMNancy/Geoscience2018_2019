@@ -1,5 +1,5 @@
 import pandas as pd
-from local_algorithms import cluster, analyse_magnitude
+from local_algorithms import cluster, analyse_magnitude, analyse_dimension, analyse_temporelle
 
 if __name__ == '__main__':
     # Chargement des données
@@ -14,5 +14,9 @@ if __name__ == '__main__':
     # Analyse
     print("# Analyse en magnitude #")
     print(analyse_magnitude(df_clusters))
+    print("# Analyse en dimension #")
+    analyse_dimension(df_clusters)
+    print("# Analyse temporelle #")
+    analyse_temporelle(df_clusters)
 
 

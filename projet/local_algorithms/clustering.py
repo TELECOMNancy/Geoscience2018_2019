@@ -1,4 +1,5 @@
 import pandas as pd
+from console_progressbar import ProgressBar
 
 
 # def compute_time_distance(row_i, row_j):
@@ -41,12 +42,12 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
     number_of_rows = len(df_cluster.index)
     clustering_list = [-1] * number_of_rows
 
-    print("Creation of clusters")
     # We save the start of the temporal frame of the precedent iteration
+    pb = ProgressBar(total=number_of_rows, prefix='Creation of clusters', suffix='', decimals=0, length=50, fill='-', zfill=' ')
     last_first_correct_element = 0
     for row_i in df_cluster.itertuples():
         index_i = row_i.Index
-        print(index_i, "/", number_of_rows)
+        pb.print_progress_bar(index_i)
         # If the element is already in a cluster we get his cluster_number else we create a new cluster_number
         current_cluster = clustering_list[index_i] if clustering_list[index_i] != -1 else max(clustering_list) + 1
         in_the_temporal_window: bool = False
@@ -95,7 +96,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         "e": [],
     }
 
-    for name, group in df_clustering.groupby("cluster"):
+    for name, group in df_cluster.groupby("cluster"):
         # i of the cluster is equal to the first i
         i = group.iloc[0, :]["i"]
         p0 = 0

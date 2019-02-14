@@ -9,7 +9,7 @@ from scipy import interpolate
 
 import matplotlib
 
-matplotlib.use("svg")
+# matplotlib.use("svg")
 import pandas as pd
 import matplotlib.pyplot as plt
 import math
@@ -49,12 +49,13 @@ def analyse_magnitude(datas):
     SOMME2 = SOMME[condition]
     p = np.polyfit(X2, np.log(SOMME2), 1)
 
+    plt.figure()
     # Création et sauvegarde du graphe
     plt.plot(X, somme)
     # plt.plot(x, tngnt(x), label="tangent")
     plt.plot(X2, np.exp(p[0] * X2 + p[1]), 'g--')
     plt.yscale('log')
-    plt.savefig('Magnitude_AnalyseTest.png')
+    plt.savefig('../data/Magnitude_AnalyseTest.png')
 
     print("Valeur de b :", p[0])
     print("Valeur de a :", p[1])
