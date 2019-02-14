@@ -37,33 +37,50 @@ def omori(pas_de_temps, t , K, p_value, c):
 
 # Calcul densité de probabilité (loi Gamma)
 def proba(t_normalized):
-    b = beta(t_normalized)
-    return C(b) * np.power(t_normalized, 1/b - 1) * np.exp(-t_normalized / b)
+    b = np.var(t_normalized)/np.mean(t_normalized)
+    print("beta " , b)
+    gam = np.mean(t_normalized)/b
+    print("gamma " , gam)
+    return C(gam, b) * np.power(t_normalized, gam - 1) * np.exp(-t_normalized / b)
 
-def C(b):
-    return 1/(np.power(b, 1/b) * gamma(1/b))
-    
-def beta(t_normalized):
-    return np.var(t_normalized) / t_normalized
+def C(gam, b):
+    C =  np.power(b, gam) * gamma(gam)
+    return 1/C
 
 
 t_declenchement_microcrack = df['i'] * 0.0001 
 # Normalisation de t
-min = np.min( t_declenchement_microcrack)
-max = np.max(t_declenchement_microcrack)
-t_normalized = t_declenchement_microcrack * len(t_declenchement_microcrack) / (max - min)
 
-#print(proba(t_normalized).head())
+dif = np.diff(t_declenchement_microcrack)
+#print(len(dif))
+dif = dif[dif!=0]
+#print(len(dif))
 
-'''
+# Tri de dif
+dif = np.sort(dif)
+
+min = np.min(dif)
+max = np.max(dif)
+
+lamda = len(dif) / (max - min)
+t_normalized = dif * lamda
+
+"""
+print(min)
+print(max)
+print(len(dif))
+
+print( np.mean(t_normalized))
+"""
+p = proba(t_normalized)
+print(p) 
+
 fig, ax = plt.subplots()
-plt.plot( proba(t_normalized) , t_normalized)
+plt.plot(  t_normalized, p)
+plt.yscale('log')
+plt.xscale('log')
 plt.xlabel('Temps normalisé')
 plt.ylabel('Densité de probabilité temporelle')
 plt.grid()
-plt.xscale('log',basey=10) 
-plt.yscale('log',basey=10) 
-fig.savefig("test3.png")
-plt.show() '''
-
-print(C(beta(t_normalized))
+fig.savefig("test4.png")
+plt.show()
