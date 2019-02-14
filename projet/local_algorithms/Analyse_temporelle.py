@@ -4,10 +4,9 @@ import numpy as np
 from math import gamma
 from sklearn.preprocessing import MinMaxScaler
 
-df=pd.read_csv(
-'/Users/sakina/Downloads/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt', sep= ' ')
+#df=pd.read_csv(
+#'/Users/sakina/Downloads/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt', sep= ' ')
 
-#df.info()
 
 # Analyse temporelle 
 # Loi d'Omori 
@@ -47,40 +46,31 @@ def C(gam, b):
     C =  np.power(b, gam) * gamma(gam)
     return 1/C
 
+def analyse_temporelle(df)
+    t_declenchement_microcrack = df['i'] * 0.0001 
 
-t_declenchement_microcrack = df['i'] * 0.0001 
-# Normalisation de t
+    dif = np.diff(t_declenchement_microcrack)
+    # Supprimer les valeurs nulles
+    dif = dif[dif!=0]
+    # Tri de dif
+    dif = np.sort(dif)
 
-dif = np.diff(t_declenchement_microcrack)
-#print(len(dif))
-dif = dif[dif!=0]
-#print(len(dif))
+    min = np.min(dif)
+    max = np.max(dif)
+    # Normalisation de t
+    lamda = len(dif) / (max - min)
+    t_normalized = dif * lamda
 
-# Tri de dif
-dif = np.sort(dif)
+    p = proba(t_normalized)
 
-min = np.min(dif)
-max = np.max(dif)
-
-lamda = len(dif) / (max - min)
-t_normalized = dif * lamda
-
-"""
-print(min)
-print(max)
-print(len(dif))
-
-print( np.mean(t_normalized))
-"""
-p = proba(t_normalized)
-print(p) 
-
-fig, ax = plt.subplots()
-plt.plot(  t_normalized, p)
-plt.yscale('log')
-plt.xscale('log')
-plt.xlabel('Temps normalisé')
-plt.ylabel('Densité de probabilité temporelle')
-plt.grid()
-fig.savefig("test4.png")
-plt.show()
+    fig, ax = plt.subplots()
+    plt.plot(  t_normalized, p)
+    plt.plot(  t_normalized, 1/t_normalized)
+    plt.plot(  t_normalized, np.exp(-t_normalized))
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.xlabel('Temps normalisé')
+    plt.ylabel('Densité de probabilité temporelle')
+    plt.grid()
+    fig.savefig("test6.png")
+    plt.show()
