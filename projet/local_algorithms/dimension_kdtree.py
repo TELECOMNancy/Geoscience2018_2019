@@ -131,7 +131,7 @@ def analyse_dimension(df):
 
 
 if __name__ == '__main__':
-    df = pd.read_table("cracks.csv",sep =' ',header = 0,nrows=1000)
+    df = pd.read_table("cracks.csv",sep =' ',header = 0)
     analyse_dimension(df)
 
 
