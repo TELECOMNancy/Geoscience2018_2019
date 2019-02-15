@@ -124,6 +124,9 @@ def analyse_dimension(df):
     plt.plot(x, y)
 
     fit = np.polyfit(x, y, 1) 
+    return { "a" : fit[0],
+             "b" : fit[1]
+             }
 
 if __name__ == '__main__':
     df = pd.read_table("data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt", sep=' ', header=0)
