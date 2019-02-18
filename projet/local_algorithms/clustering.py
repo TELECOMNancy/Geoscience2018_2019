@@ -34,7 +34,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
     :return: A new dataframe
     """
 
-    df_cluster = df_in[["i", "p0", "p1", "p2", "e", "t"]]
+    df_cluster = df_in[["i", "p0", "p1", "p2", "e"]]
 
     # As we don't compute the square root
     delta_v = delta_v ** 2
@@ -92,7 +92,6 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         "p0": [],
         "p1": [],
         "p2": [],
-        "t": [],
         "e": [],
     }
 
@@ -103,7 +102,6 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         p1 = 0
         p2 = 0
         # t of the cluster is equal to the first t
-        t = group.iloc[0, :]["t"]
         e = 0
         for row in group.itertuples():
             p0 += row.p0
@@ -120,7 +118,6 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         data_out["p0"].append(p0)
         data_out["p1"].append(p1)
         data_out["p2"].append(p2)
-        data_out["t"].append(t)
         data_out["e"].append(e)
 
     return pd.DataFrame.from_dict(data_out)
