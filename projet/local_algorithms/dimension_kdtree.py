@@ -1,7 +1,9 @@
 from scipy import spatial
 import numpy as np
 import matplotlib.pyplot as plt
-
+import pandas as pd
+import utils_lib as utils
+from console_progressbar import ProgressBar
 ''''
 x, y = np.mgrid[0:5, 0:5]
 points = np.c_[x.ravel(), y.ravel()]
@@ -80,28 +82,21 @@ def get_distance_min_max(clusters_tab):
 def get_abcisses(nb,minimum,maximum):
     #minimum_log = math.log(minimum)
     #maximum_log = math.log(maximum)
-    return np.logspace(minimum, maximum,num=nb)
+    return np.geomspace(minimum, maximum,num=nb)
 
 def get_ordonnees(tree,abcisse,nb_total):
     y = list()
     compteur = 0
-    maximum = 0
-    compteur_pas = 0
+    pb = ProgressBar(total=len(abcisse), prefix='Graphique corrélation spatiale', suffix='', decimals=0, length=50, fill='-', zfill=' ')
     for i in range(0,len(abcisse)):
-        near_pairs = math.log(near_pairs_number_optimised(tree,abcisse[i]))/nb_total
-        if maximum != near_pairs:
-            y.append(near_pairs)
-            maximum = near_pairs
-            compteur +=1
-            compteur_pas +=1
-            print(str(compteur/len(abcisse)*100)+'%')
-        else : break
-    return y,compteur_pas
-        
-def recompute_abcisses(x,nb):
-    x = x[:nb]
-    return x
-        
+        near_pairs = near_pairs_number_optimised(tree,abcisse[i])/nb_total
+        y.append(near_pairs)
+        compteur +=1
+        pb.print_progress_bar(i)
+        #print(str(compteur/len(abcisse)*100)+'%')
+    return y
+
+
 def analyse_dimension(df):
     p0 = df['p0']
     p1 = df['p1']
@@ -114,22 +109,29 @@ def analyse_dimension(df):
 
 
     x = get_abcisses(20,minimum,maximum)
-    y, compteur = get_ordonnees(tree,x,nt)
-    x = recompute_abcisses(x,compteur)
+    y= get_ordonnees(tree,x,nt)
+    
+    '''
     plt.figure()
     plt.xlabel('distance log(r) ')
     plt.ylabel('corrélation spatiale')
     plt.title('Graphe de corrélation spatiale')
     plt.xscale('log')
-    plt.plot(x, y)
+    plt.plot(x, y)'''
+    
+    
+    utils.build_fractal_dimension_figure(x, y, "Corrélation spatiale","test")
+
 
     fit = np.polyfit(x, y, 1) 
+
     return { "a" : fit[0],
              "b" : fit[1]
              }
 
+
 if __name__ == '__main__':
-    df = pd.read_table("data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt", sep=' ', header=0)
+    df = pd.read_table("cracks.csv",sep =' ',header = 0)
     analyse_dimension(df)
 
 
