@@ -24,19 +24,9 @@ def parse(line):
                  )
 
 
-def map_before_block(crack: Crack):
+def map_before_reduce_in_block(crack: Crack):
     i_bloc = int(crack.i / BLOCK_SIZE)
-    to_duplicate = BLOCK_SIZE * (i_bloc + 1) - crack.i <= T_WINDOW
-
-    if to_duplicate:
-        return [
-            (i_bloc, [crack]),
-            (i_bloc + 1, [crack])
-        ]
-    else:
-        return [
-            (i_bloc, [crack]),
-        ]
+    return i_bloc, [crack]
 
 
 def reduce_in_block(list1, list2):
@@ -44,9 +34,9 @@ def reduce_in_block(list1, list2):
     return list1
 
 
-def map_cluster(tuple):
-    i_block = tuple[0]
-    list_of_cracks = tuple[1]
+def map_cluster(tuple_):
+    i_block = tuple_[0]
+    list_of_cracks = tuple_[1]
     list_of_cracks = sorted(list_of_cracks, key=lambda crack: crack.i)
 
     df_cluster = pd.DataFrame(list_of_cracks, columns=HEADER)
@@ -100,7 +90,14 @@ def map_cluster(tuple):
     for name, group in df_cluster.groupby("cluster"):
         # i of the cluster is equal to the first i
         group = group.drop(columns=["cluster"])
-        clusters.append(Cluster(i_block, list(group.itertuples(index=False, name="Crack")), block_size=BLOCK_SIZE, t_window=T_WINDOW))
+        clusters.append(
+            Cluster(
+                i_block,
+                list(group.itertuples(index=False, name="Crack")),
+                block_size=BLOCK_SIZE,
+                t_window=T_WINDOW
+            )
+        )
 
     return clusters
 
@@ -121,10 +118,14 @@ if __name__ == '__main__':
     sc = SparkContext(conf=conf)
     # Spark work
     print("Spark is working")
+
     rdd_input = sc.textFile(data_test).filter(lambda x: not x.startswith("i"))
+
     rdd_parsed = rdd_input.map(parse)
     # t1 = rdd_parsed.first()
-    rdd_in_block = rdd_parsed.flatMap(map_before_block).reduceByKey(reduce_in_block)
+
+    rdd_in_block = rdd_parsed.map(map_before_reduce_in_block).reduceByKey(reduce_in_block)
+
     rdd_clustered = rdd_in_block.flatMap(map_cluster)
     # t2 = rdd_clustered.first()[0]
     print(rdd_clustered.first())
