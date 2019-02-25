@@ -45,13 +45,8 @@ class Cluster:
             else:
                 break
 
-    @staticmethod
-    def to_merge(cluster1, cluster2):
-        # the clusters need to be one block apart
-        # there must be a common element
-        if cluster1.i_block - cluster2.i_block == -1:
-            len(set(cluster1).intersection(cluster2))
-        return False
+    def can_be_merged(self):
+        return len(self.transition_start) > 0 or len(self.transition_end) > 0
 
     def __repr__(self):
         representation = "Cluster:\n\ti_block: {},\n\tlen: {},".format(self.i_block, len(self.rows))
@@ -64,3 +59,22 @@ class Cluster:
 
     def __getitem__(self, item):
         return self.rows[item]
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __str__(self):
+        i = self[0].i
+        p0 = 0
+        p1 = 0
+        p2 = 0
+        e = 0
+        for crack in self:
+            p0 = p0 + crack.p0
+            p1 = p1 + crack.p1
+            p2 = p2 + crack.p2
+            e = e + crack.e
+        p0 = p0/len(self)
+        p1 = p1/len(self)
+        p2 = p2/len(self)
+        return "{},{},{},{},{}".format(i, p0, p1, p2, e)

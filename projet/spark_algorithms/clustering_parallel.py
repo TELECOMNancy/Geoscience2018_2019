@@ -6,9 +6,6 @@ import pandas as pd
 
 # Constants
 HEADER = ["i", "p0", "p1", "p2", "e"]
-BLOCK_SIZE = 10000
-V_WINDOW = 0.25
-T_WINDOW = 2000
 
 # Crack
 Crack = namedtuple('Crack', HEADER)
@@ -48,16 +45,14 @@ def map_cluster(tuple_):
     clustering_list = [-1] * number_of_rows
 
     last_first_correct_element = 0
-    for row_i in df_cluster.itertuples():
-        index_i = row_i.Index
+    for index_i, row_i in enumerate(df_cluster.itertuples()):
         # If the element is already in a cluster we get his cluster_number else we create a new cluster_number
         current_cluster = clustering_list[index_i] if clustering_list[index_i] != -1 else max(clustering_list) + 1
         in_the_temporal_window: bool = False
         # The elements are sorted on their iteration number, once we have surpassed the time frame
         # the following elements won't be of use
         # If was_in_time is False, we are before the temporal window
-        for row_j in df_cluster.itertuples():
-            index_j = row_j.Index
+        for index_j, row_j in enumerate(df_cluster.itertuples()):
             if index_j >= last_first_correct_element:
                 # delta_t_ij = compute_time_distance(row_i, row_j)
                 delta_t_ij = abs(row_i.i - row_j.i)
@@ -85,6 +80,9 @@ def map_cluster(tuple_):
 
     df_cluster["cluster"] = clustering_list
 
+    if i_block == 1:
+        print(df_cluster.head(15))
+
     clusters: list = []
 
     for name, group in df_cluster.groupby("cluster"):
@@ -101,15 +99,14 @@ def map_cluster(tuple_):
 
     return clusters
 
-
 if __name__ == '__main__':
     print("Spark is starting")
     # Test file in input
-    data_test = "../../data/test2.txt"  # Should be some file on your system
+    data_test = "../../data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt"  # Should be some file on your system
     # Variables
-    BLOCK_SIZE = 10
-    V_WINDOW = 1
-    T_WINDOW = 1
+    BLOCK_SIZE = 10000
+    V_WINDOW = 0.25
+    T_WINDOW = 200
     # Configuration of the spark work
     conf = (SparkConf()
             .setMaster("local")
@@ -128,5 +125,13 @@ if __name__ == '__main__':
 
     rdd_clustered = rdd_in_block.flatMap(map_cluster)
     # t2 = rdd_clustered.first()[0]
+
+    # For the clusters that we can save easily
+    rdd_clustered_no_need_to_merge = rdd_clustered.filter(lambda cluster: not cluster.can_be_merged())
+    rdd_clustered_no_need_to_merge_formatted = rdd_clustered_no_need_to_merge.map(lambda cluster: cluster.__str__())
+    rdd_clustered_no_need_to_merge_formatted.saveAsTextFile("../../clusters/no_need_to_merge_formatted")
+
+    rdd_clustered_need_to_merge = rdd_clustered.filter(lambda cluster: cluster.can_be_merged())
+
     print(rdd_clustered.first())
     print("SPark has finished its work")

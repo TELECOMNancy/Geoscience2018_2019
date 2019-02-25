@@ -45,8 +45,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
     # We save the start of the temporal frame of the precedent iteration
     pb = ProgressBar(total=number_of_rows, prefix='Creation of clusters', suffix='', decimals=0, length=50, fill='-', zfill=' ')
     last_first_correct_element = 0
-    for row_i in df_cluster.itertuples():
-        index_i = row_i.Index
+    for index_i, row_i in enumerate(df_cluster.itertuples()):
         pb.print_progress_bar(index_i)
         # If the element is already in a cluster we get his cluster_number else we create a new cluster_number
         current_cluster = clustering_list[index_i] if clustering_list[index_i] != -1 else max(clustering_list) + 1
@@ -54,8 +53,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         # The elements are sorted on their iteration number, once we have surpassed the time frame
         # the following elements won't be of use
         # If was_in_time is False, we are before the temporal window
-        for row_j in df_cluster.itertuples():
-            index_j = row_j.Index
+        for index_j, row_j in enumerate(df_cluster.itertuples()):
             if index_j >= last_first_correct_element:
                 # delta_t_ij = compute_time_distance(row_i, row_j)
                 delta_t_ij = abs(row_i.i - row_j.i)
@@ -65,9 +63,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
                         last_first_correct_element = index_j
                         in_the_temporal_window = True
                     # delta_v_ij = compute_euclidean_distance_square(row_i, row_j)
-                    delta_v_ij = (row_i.p0 - row_j.p0) ** 2 \
-                                 + (row_i.p1 - row_j.p1) ** 2 \
-                                 + (row_i.p2 - row_j.p2) ** 2
+                    delta_v_ij = (row_i.p0 - row_j.p0) ** 2  + (row_i.p1 - row_j.p1) ** 2 + (row_i.p2 - row_j.p2) ** 2
                     # If there is a collocation in time and space
                     if delta_v_ij < delta_v:
                         # If the crack has already a cluster assigned and it is different from the current cluster
@@ -84,6 +80,8 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
                     break
 
     df_cluster["cluster"] = clustering_list
+
+    print(df_cluster.head(15))
 
     print("Formalize the result")
     # create the new data
@@ -104,10 +102,10 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         # t of the cluster is equal to the first t
         e = 0
         for row in group.itertuples():
-            p0 += row.p0
-            p1 += row.p1
-            p2 += row.p2
-            e += row.e
+            p0 = p0 + row.p0
+            p1 = p1 + row.p1
+            p2 = p2 + row.p2
+            e = e + row.e
 
         count = len(group.index)
         p0 = p0 / count
@@ -120,6 +118,8 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
         data_out["p2"].append(p2)
         data_out["e"].append(e)
 
+    print(data_out["i"][:15])
+
     return pd.DataFrame.from_dict(data_out)
 
 
@@ -128,7 +128,7 @@ def test():
     df_file: pd.DataFrame = pd.read_csv("../../data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt", sep=" ")
     t_window = 200
     v_window = 0.25
-    print("__main__ -> \n", df_file.head(5))
+    print("__main__ -> \n", df_file.head(15))
     df_res = cluster(df_file, t_window, v_window)
     print("__res__ ->\n", df_res.head(5))
     df_res.to_csv("../../data/clustering_results_t_" + str(t_window) + "_v_" + str(v_window).replace(".", "point")
