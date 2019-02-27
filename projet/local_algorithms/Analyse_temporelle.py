@@ -139,5 +139,4 @@ def build_omori_plot_figure(x, y, graph_name, filename) :
 	fig.tight_layout()
 #	plt.show()
 	plt.savefig(graph_name)
-	#plt.savefig(graph_name) '''
-	
+	#plt.savefig(graph_name) """
