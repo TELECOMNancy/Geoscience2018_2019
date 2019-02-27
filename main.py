@@ -1,6 +1,6 @@
 from pyspark import SparkContext, SparkConf
 from collections import namedtuple
-from projet.spark_algorithms.cluster_class import Cluster
+from cluster_class import Cluster
 import numpy as np
 import pandas as pd
 import sys
@@ -131,7 +131,7 @@ if __name__ == '__main__':
                 .setMaster("spark://tncy-master:7077")
                 .setAppName("Clustering")
                 )
-        sc = SparkContext(conf=conf)
+        sc = SparkContext(conf=conf, pyFiles=['cluster_class.py'])
         # Spark work
         print("Spark is working")
 
