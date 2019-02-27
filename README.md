@@ -20,3 +20,8 @@ PATH=$PATH:<>/lib/site-packages/pyspark/bin
 PYSPARK_PYTHON=<>/python
 PYSPARK_DRIVER_PYTHON=<>/python
 ```
+
+Sur les clusters
+```
+SPARK_HOME=/bigdata/spark
+```

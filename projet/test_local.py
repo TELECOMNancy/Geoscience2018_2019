@@ -3,7 +3,7 @@ from projet.local_algorithms import cluster, analyse_magnitude, analyse_dimensio
 
 if __name__ == '__main__':
     # Chargement des données
-    df_in = pd.read_csv("../data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt", sep=" ")
+    df_in = pd.read_csv("../data/crack.csv", sep=" ")
     # print(df_in.head())
 
     # Cluster

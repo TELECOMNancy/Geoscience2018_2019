@@ -125,7 +125,7 @@ def cluster(df_in: pd.DataFrame, delta_t: float, delta_v: float):
 
 def test():
     # df_file: pd.DataFrame = pd.read_csv("../../data/test.txt", sep=" ")
-    df_file: pd.DataFrame = pd.read_csv("../../data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt", sep=" ")
+    df_file: pd.DataFrame = pd.read_csv("../../data/crack.csv", sep=" ")
     t_window = 200
     v_window = 0.25
     print("__main__ -> \n", df_file.head(15))

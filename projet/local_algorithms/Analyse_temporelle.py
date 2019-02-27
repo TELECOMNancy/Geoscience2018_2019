@@ -5,7 +5,7 @@ from math import gamma
 from sklearn.preprocessing import MinMaxScaler
 
 #df=pd.read_csv(
-#'/Users/sakina/Downloads/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt', sep= ' ')
+#'/Users/sakina/Downloads/crack.csv', sep= ' ')
 
 
 # Analyse temporelle 
@@ -139,5 +139,4 @@ def build_omori_plot_figure(x, y, graph_name, filename) :
 	fig.tight_layout()
 #	plt.show()
 	plt.savefig(graph_name)
-	#plt.savefig(graph_name) '''
-	
+	#plt.savefig(graph_name) """

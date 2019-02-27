@@ -3,6 +3,17 @@ from collections import namedtuple
 from projet.spark_algorithms.cluster_class import Cluster
 import numpy as np
 import pandas as pd
+import sys
+import time
+
+# Arguments
+ARGUMENTS = {
+    "input_file": 1,
+    "output_file": 2,
+    "block_size": 3,
+    "t_window": 4,
+    "v_window": 5,
+}
 
 # Constants
 HEADER = ["i", "p0", "p1", "p2", "e"]
@@ -57,14 +68,14 @@ def map_cluster(tuple_):
                 # delta_t_ij = compute_time_distance(row_i, row_j)
                 delta_t_ij = abs(row_i.i - row_j.i)
                 # if the point is in the temporal window
-                if delta_t_ij <= delta_t:
+                if delta_t_ij < delta_t:
                     if not in_the_temporal_window:
                         last_first_correct_element = index_j
                         in_the_temporal_window = True
                     # delta_v_ij = compute_euclidean_distance_square(row_i, row_j)
                     delta_v_ij = (row_i.p0 - row_j.p0) ** 2 + (row_i.p1 - row_j.p1) ** 2 + (row_i.p2 - row_j.p2) ** 2
                     # If there is a collocation in time and space
-                    if delta_v_ij <= delta_v:
+                    if delta_v_ij < delta_v:
                         # If the crack has already a cluster assigned and it is different from the current cluster
                         if clustering_list[index_j] != -1 and clustering_list[index_j] != current_cluster:
                             # Merge the two clusters
@@ -80,8 +91,8 @@ def map_cluster(tuple_):
 
     df_cluster["cluster"] = clustering_list
 
-    if i_block == 1:
-        print(df_cluster.head(15))
+    # if i_block == 1:
+    #     print(df_cluster.head(15))
 
     clusters: list = []
 
@@ -99,39 +110,73 @@ def map_cluster(tuple_):
 
     return clusters
 
+
 if __name__ == '__main__':
-    print("Spark is starting")
-    # Test file in input
-    data_test = "../../data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt"  # Should be some file on your system
-    # Variables
-    BLOCK_SIZE = 10000
-    V_WINDOW = 0.25
-    T_WINDOW = 200
-    # Configuration of the spark work
-    conf = (SparkConf()
-            .setMaster("local")
-            .setAppName("Clustering")
-            )
-    sc = SparkContext(conf=conf)
-    # Spark work
-    print("Spark is working")
+    print(sys.argv)
+    if len(sys.argv) != len(ARGUMENTS) + 1:
+        print("USAGE python clustering_parallel.py <input_file> <output_file> <block_size> <t_window> <v_window>")
 
-    rdd_input = sc.textFile(data_test).filter(lambda x: not x.startswith("i"))
+    else:
+        print("Parsing the input")
+        time_start = time.time()
+        # Parsing input
+        data_input = sys.argv[ARGUMENTS["input_file"]]  # Should be some file on your system
+        data_output = sys.argv[ARGUMENTS["output_file"]]
+        BLOCK_SIZE = int(sys.argv[ARGUMENTS["block_size"]])
+        V_WINDOW = float(sys.argv[ARGUMENTS["v_window"]])
+        T_WINDOW = int(sys.argv[ARGUMENTS["t_window"]])
+        print("Starting spark")
+        # Configuration of the spark work
+        conf = (SparkConf()
+                .setMaster("local")
+                .setAppName("Clustering")
+                )
+        sc = SparkContext(conf=conf)
+        # Spark work
+        print("Spark is working")
 
-    rdd_parsed = rdd_input.map(parse)
-    # t1 = rdd_parsed.first()
+        rdd_input = sc.textFile(data_input).filter(lambda x: not x.startswith("i"))
 
-    rdd_in_block = rdd_parsed.map(map_before_reduce_in_block).reduceByKey(reduce_in_block)
+        rdd_parsed = rdd_input.map(parse)
+        rdd_in_block = rdd_parsed.map(map_before_reduce_in_block).reduceByKey(reduce_in_block)
+        rdd_clustered = rdd_in_block.flatMap(map_cluster).cache()
 
-    rdd_clustered = rdd_in_block.flatMap(map_cluster)
-    # t2 = rdd_clustered.first()[0]
+        # Merge of the clusters
+        print("Merging the clusters")
+        rdd_clustered_need_to_merge = rdd_clustered.filter(lambda cluster: cluster.can_be_merged())
+        list_clusters_merged = list(rdd_clustered_need_to_merge.collect())
 
-    # For the clusters that we can save easily
-    rdd_clustered_no_need_to_merge = rdd_clustered.filter(lambda cluster: not cluster.can_be_merged())
-    rdd_clustered_no_need_to_merge_formatted = rdd_clustered_no_need_to_merge.map(lambda cluster: cluster.__str__())
-    rdd_clustered_no_need_to_merge_formatted.saveAsTextFile("../../clusters/no_need_to_merge_formatted")
+        index_1: int = 0
+        while index_1 < len(list_clusters_merged):
+            cluster_1 = list_clusters_merged[index_1]
 
-    rdd_clustered_need_to_merge = rdd_clustered.filter(lambda cluster: cluster.can_be_merged())
+            index_2: int = index_1 + 1
+            has_been_merged: bool = False
+            while index_2 < len(list_clusters_merged):
+                cluster_2 = list_clusters_merged[index_2]
+                if cluster_1.can_be_merged_with(cluster_2, T_WINDOW, V_WINDOW):
+                    has_been_merged = True
+                    new_cluster = Cluster.merge(cluster_1, cluster_2)
+                    # Remove the old cluster and add the new one
+                    list_clusters_merged.remove(cluster_1)
+                    list_clusters_merged.remove(cluster_2)
+                    list_clusters_merged.insert(index_1, new_cluster)
+                    break
+                index_2 = index_2 + 1
 
-    print(rdd_clustered.first())
-    print("SPark has finished its work")
+            if not has_been_merged:
+                index_1 = index_1 + 1
+
+        # Save the clusters
+        rdd_final = rdd_clustered.filter(lambda cluster: not cluster.can_be_merged())
+        rdd_merged = sc.parallelize(list_clusters_merged)
+        rdd_final = rdd_final.union(rdd_merged)
+
+        rdd_final_mapped = rdd_final.map(lambda cluster: cluster.__str__())
+        rdd_final_mapped.saveAsTextFile(data_output)
+
+        time_end = time.time()
+
+        print("Spark has finished its work in : ", time_end-time_start, "s")
+        print("The result has been saved in ", data_output)
+        print("Final number of clusters :", rdd_final_mapped.count())

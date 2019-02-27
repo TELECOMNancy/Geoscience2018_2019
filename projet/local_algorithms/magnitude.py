@@ -152,7 +152,7 @@ def recherche_borne(magnitudes, somme, intervalle_min = 3):
 
 
 if __name__ == "__main__":
-    #df=pd.read_csv('../data/cracks_X1Y2Z01_2k_granite_30MPa_r015.txt', sep= ' ')
+    #df=pd.read_csv('../data/crack.csv', sep= ' ')
     df = pd.read_csv('../data/clustering_results_t_200_v_0point25.csv', sep=',')
     # df.info()
 
