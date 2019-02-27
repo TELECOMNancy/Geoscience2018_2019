@@ -1,16 +1,17 @@
 Le but de ce fichier est d'exposer brièvement les méthodes d'installation des logiciels suivants :
 	* Hadoop (version 2.7+)
-	* Spark  (version 2.3.2)
+	* Spark  (version 2.3.2
+	* Scala  (version 2.11.6))
 	* Python (version 3.6)
 
 ############################
 ## Installation de Hadoop ##
 ############################
 
-Télécharger le fichier compresser depuis le site officiel d'Hadoop (https://hadoop.apache.org/releases.html).
+Télécharger l'archive depuis le site officiel d'Hadoop (https://hadoop.apache.org/releases.html).
 Il est possible de télécharger directement l'archive localement via la commande :
 
-	curl -O URL/hadoop-X.X.X/hadoop-X.X.X-src.tar.gz
+	curl -O http://apache.mediamirrors.org/hadoop/common/hadoop-X.X.X/hadoop-X.X.X-src.tar.gz
 
 Il faut ensuite extraire l'archive via la commande :
 	
@@ -18,7 +19,79 @@ Il faut ensuite extraire l'archive via la commande :
 
 Puis ajouter Hadoop aux variables d'environments :
 	* sous bash : vi ~/.bashrc 						# Pour accéder aux fichier d'édition des variables.
-		      export HADOOP_HOME=pathToDirectory/hadoop-X.X.X-src	# Chemin jusqu'à l'archive extraite.
+		      
+				export HADOOP_HOME=pathToDirectory/hadoop-X.X.X-src	# Chemin jusqu'à l'archive extraite.
 
-Enfin, editer le fichier de configuration d'Hadoop se trouvant $HADOOP_HOME/conf
+Enfin, editer le fichier de configuration d'Hadoop se trouvant $HADOOP_HOME/etc/hadoop/slaves.
+Le fichier doit contenir le noms des machines esclaves , par exemple pour le cluster de TELECOM Nancy :
 	
+	tncy-master
+	tncy-slaves-1
+	tncy-slaves-2
+
+###########################
+## Installation de Spark ##
+###########################
+
+Télécharger l'archive depuis le site officiel de Spark (https://spark.apache.org/downloads.html).
+Il est possible de télécharger directement l'archive localement via la commande :
+
+	curl -O https://www.apache.org/dyn/closer.lua/spark/spark-X.X.X/spark-X.X.X-bin-hadoopX.X.tgz
+
+Il faut ensuite extraire l'archive via la commande :
+
+	tar -xzf spark-X.X.X-bin-hadoopX.X.tgz
+
+Puis ajouter Spark aux variables d'environments :
+	* sous bash : vi ~/.bashrc
+
+		      		export SPARK_HOME=pathToDirectory/spark-X.X.X-bin-hadoopX.X
+
+Enfin, editer le fichier de configuration de Spark se trouvant $SPARK_HOME/conf/slaves.
+Le fichier doit contenir la même chose que le fichier de configuration d'Hadoop.
+
+###########################
+## Installation de Scala ##
+###########################
+
+L'installa de Scala est similaire à celle de Hadoop et de Spark. 
+Le site officiel est : https://www.scala-lang.org/download/2.11.6.html.
+
+############################
+## Installation de Python ##
+############################
+
+
+Selon votre système d'exploitation utiliser la commande équivalente à "apt-get".
+
+Tout d'abord, il faut installer Python via la commande :
+	
+	apt-get install python3.6
+
+Puis installer pip3 via la commande :
+
+	apt-get install pip3.6
+
+Puis installer les paquets suivants :
+
+	- matplotlib : 
+		
+		pip3.6 install matplotlib
+
+	- pandas :
+		
+		pip3.6 install pandas 
+	
+	- pyspark :
+
+		pip3.6 install pyspark
+
+	- console-progressbar :
+
+		pip3.6 install console-progressbar
+
+Puis ajouter PySpark aux variables d'environments :
+	vim ~/.bashrc
+		
+		export PYSPARK_PYTHON=python3.6
+		export PYSPARK_DRIVER_PYTHON=python3.6
