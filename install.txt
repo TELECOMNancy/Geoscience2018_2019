@@ -1,0 +1,24 @@
+Le but de ce fichier est d'exposer brièvement les méthodes d'installation des logiciels suivants :
+	* Hadoop (version 2.7+)
+	* Spark  (version 2.3.2)
+	* Python (version 3.6)
+
+############################
+## Installation de Hadoop ##
+############################
+
+Télécharger le fichier compresser depuis le site officiel d'Hadoop (https://hadoop.apache.org/releases.html).
+Il est possible de télécharger directement l'archive localement via la commande :
+
+	curl -O URL/hadoop-X.X.X/hadoop-X.X.X-src.tar.gz
+
+Il faut ensuite extraire l'archive via la commande :
+	
+	tar -xzf hadoop-X.X.X-src.tar.gz
+
+Puis ajouter Hadoop aux variables d'environments :
+	* sous bash : vi ~/.bashrc 						# Pour accéder aux fichier d'édition des variables.
+		      export HADOOP_HOME=pathToDirectory/hadoop-X.X.X-src	# Chemin jusqu'à l'archive extraite.
+
+Enfin, editer le fichier de configuration d'Hadoop se trouvant $HADOOP_HOME/conf
+	
